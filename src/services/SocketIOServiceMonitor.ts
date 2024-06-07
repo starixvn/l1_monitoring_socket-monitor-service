@@ -22,12 +22,19 @@ export class SocketIOServiceMonitor implements IServiceMonitor {
         this.url = url;
         this.interval = interval;
         this.metricsClient = metricsClient;
-        debugger;
         this.logger = logger;
     }
 
     connect(): void {
-        this.socket = io(this.url);
+        const socketRoute = `wss://l1-proxy1.lumigame.com/user/${this.url}`;
+        const option = {
+            forceNew: true,
+            transports: ["websocket"],
+            upgrade: false,
+            path: `/${this.url}/socket.io`,
+        };
+
+        this.socket = io(socketRoute, option);
 
         this.socket.on("connect", () => {
             this.logger.log(`Connected to ${this.url}`);
