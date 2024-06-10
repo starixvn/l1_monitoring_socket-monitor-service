@@ -12,7 +12,6 @@ const logger = container.resolve<typeof Logger>("logger");
 
 const monitors: SocketIOServiceMonitor[] = [];
 
-// Initialize monitors
 config.services.forEach((service: { url: string; interval: number }) => {
     const monitor = new SocketIOServiceMonitor({
         url: service.url,
@@ -20,6 +19,7 @@ config.services.forEach((service: { url: string; interval: number }) => {
         metricsClient: prometheusClient,
         logger,
     });
+
     monitors.push(monitor);
     monitor.connect();
 });

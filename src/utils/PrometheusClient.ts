@@ -1,11 +1,13 @@
 import { Registry, Gauge, Pushgateway, PrometheusContentType } from "prom-client";
 import { IMetricsClient } from "../interfaces/IMetricsCLient";
+import { Logger } from "./Logger";
 
 interface PrometheusClientDependencies {
     config: {
         pushGatewayUrl: string;
         jobName: string;
     };
+    logger: typeof Logger;
 }
 
 export class PrometheusClient implements IMetricsClient {
@@ -13,8 +15,18 @@ export class PrometheusClient implements IMetricsClient {
     private registry: Registry;
     private latencyGauge: Gauge<string>;
     private pushGateway: Pushgateway<PrometheusContentType>;
+    private logger: typeof Logger;
 
-    constructor({ config }: PrometheusClientDependencies) {
+    private options: any = {
+        timeout: 5_000,
+        agentOptions: {
+            keepAlive: true,
+            keepAliveMsecs: 10_000,
+            maxSockets: 10,
+        },
+    };
+
+    constructor({ config, logger }: PrometheusClientDependencies) {
         this.registry = new Registry();
         this.jobName = config.jobName;
         this.latencyGauge = new Gauge({
@@ -24,8 +36,10 @@ export class PrometheusClient implements IMetricsClient {
         });
         this.registry.registerMetric(this.latencyGauge);
 
-        this.pushGateway = new Pushgateway(config.pushGatewayUrl, {}, this.registry);
+        this.pushGateway = new Pushgateway(config.pushGatewayUrl, this.options, this.registry);
         this.registry.setDefaultLabels({ job: this.jobName });
+
+        this.logger = logger;
     }
 
     setLatency(serviceUrl: string, latency: number): void {
@@ -36,7 +50,7 @@ export class PrometheusClient implements IMetricsClient {
         try {
             await this.pushGateway.pushAdd({ jobName: this.jobName });
         } catch (err) {
-            console.error("Error pushing metrics to Push Gateway:", err);
+            this.logger.error(`Error pushing metrics to Push Gateway: ${err}`);
         }
     }
 }

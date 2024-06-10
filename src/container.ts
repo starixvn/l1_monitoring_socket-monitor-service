@@ -1,4 +1,3 @@
-// src/container.ts
 import { createContainer, asClass, asValue } from "awilix";
 import { PrometheusClient } from "./utils/PrometheusClient";
 import { SocketIOServiceMonitor } from "./services/SocketIOServiceMonitor";
@@ -10,8 +9,7 @@ const container = createContainer();
 
 container.register({
     config: asValue(AppConfig),
-    logger: asValue(Logger), // Register Logger as a value
-    // logger: asClass(Logger).singleton(),
+    logger: asValue(Logger),
     prometheusClient: asClass(PrometheusClient).singleton(),
     socketIOServiceMonitor: asClass(SocketIOServiceMonitor),
 });

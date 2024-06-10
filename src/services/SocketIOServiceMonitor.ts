@@ -62,8 +62,9 @@ export class SocketIOServiceMonitor implements IServiceMonitor {
             const startTime = Date.now();
             this.socket!.emit("ping", async () => {
                 const latency = Date.now() - startTime;
-                Logger.log(`Latency to ${this.url}: ${latency} ms`);
+                this.logger.log(`Latency to ${this.url}: ${latency} ms`);
                 this.metricsClient.setLatency(this.url, latency);
+
                 await this.metricsClient.pushMetrics();
             });
         }, this.interval);
