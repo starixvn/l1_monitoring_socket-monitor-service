@@ -1,15 +1,15 @@
 import { hostname } from "os";
 
 export default {
-    hostingPort: 5000,
+    hostingPort: process.env,
     services: [
         { url: "minisedie", interval: 5000 },
         { url: "vipbaccarat", interval: 5000 },
     ],
-    pushGatewayUrl: "http://your-push-gateway-url",
-    jobName: "socket_io_monitor",
+    pushGatewayUrl: process.env.PUSH_GATEWAY,
+    jobName: process.env.JOB_NAME,
     promPushGatewayConfigs: {
-        baseUrl: "http://admin:17NyV+Weaatx_86gBSKc@10.10.50.69:9091",
+        baseUrl: process.env.PUSH_GATEWAY,
         options: {
             timeout: 5_000,
             agentOptions: {
@@ -18,6 +18,6 @@ export default {
                 maxSockets: 10,
             },
         },
-        parameters: { jobName: "socket-monitoring-service", groupings: { instance: hostname() } },
+        parameters: { jobName: process.env.JOB_NAME, groupings: { instance: hostname() } },
     },
 };

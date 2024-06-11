@@ -26,7 +26,7 @@ export class SocketIOServiceMonitor implements IServiceMonitor {
     }
 
     connect(): void {
-        const socketRoute = `wss://l1-proxy1.lumigame.com/user/${this.url}`;
+        const socketRoute = `wss://l1-proxy2.lumigame.com/user/${this.url}`;
         const option = {
             forceNew: true,
             transports: ["websocket"],

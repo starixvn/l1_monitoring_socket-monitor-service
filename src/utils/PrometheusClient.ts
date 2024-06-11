@@ -11,7 +11,7 @@ interface PrometheusClientDependencies {
 }
 
 export class PrometheusClient implements IMetricsClient {
-    private jobName: string = "service_latency_ms";
+    private jobName: string;
     private registry: Registry;
     private latencyGauge: Gauge<string>;
     private pushGateway: Pushgateway<PrometheusContentType>;
@@ -29,11 +29,13 @@ export class PrometheusClient implements IMetricsClient {
     constructor({ config, logger }: PrometheusClientDependencies) {
         this.registry = new Registry();
         this.jobName = config.jobName;
+
         this.latencyGauge = new Gauge({
             name: this.jobName,
             help: "Latency of the service in milliseconds",
             labelNames: ["service_url"],
         });
+
         this.registry.registerMetric(this.latencyGauge);
 
         this.pushGateway = new Pushgateway(config.pushGatewayUrl, this.options, this.registry);
