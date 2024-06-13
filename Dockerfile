@@ -1,12 +1,15 @@
 # Use the official Node.js 20.14 image as the base image
-FROM hub.lumigame.com/docker-hub/library/node:18.1-alpine AS builder
+FROM hub.lumigame.com/docker-hub/library/node:18.1-alpine
 
 # Set working directory
 WORKDIR /app
 
 # Install app dependencies
 COPY package.json yarn.lock .modprunerrc ./
-RUN npm run reg 
+
+RUN npm run reg \
+    && yarn install
+    
 RUN yarn install --production \
     && yarn cache clean
 RUN npx mod-pruner prune --force 
