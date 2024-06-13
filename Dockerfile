@@ -1,27 +1,26 @@
-FROM hub.lumigame.com/base/node:18-16-alpine-24h1.1 AS builder
+# Use the official Node.js 20.14 image as the base image
+FROM node:20.14-alpine
+FROM hub.lumigame.com/docker-hub/library/node:18.1-alpine AS builder
+
+# Set working directory
 WORKDIR /app
+
+# Install app dependencies
 COPY package.json yarn.lock .modprunerrc ./
-RUN npm run reg \
-    && yarn install
-COPY . .
-RUN npm run build \
-    && rm -rf ./node_modules
 RUN yarn install --production \
-    && npx mod-pruner prune --force 
+    && yarn cache clean
 
-FROM hub.lumigame.com/base/node:18-16-alpine-24h1.1
-ARG NODE_ENV=production
-ENV NODE_ENV $NODE_ENV
-RUN mkdir /app && chown node:node /app
-WORKDIR /app
+# Copy the rest of the application files
+COPY . .
 
-RUN apk --no-cache add curl
+# Copy the .env file (if needed)
+COPY .env .env
 
-USER node
-ENV PATH /app/node_modules/.bin:$PATH
-COPY --from=builder /app/dist ./dist
+# Build the TypeScript code
+RUN yarn run build
 
-HEALTHCHECK  --interval=10s CMD curl --fail http://localhost:5000 || exit 1
+# Expose the port the app runs on
+EXPOSE 3000
 
 # Command to run the app
 CMD ["node", "dist/server.js"]

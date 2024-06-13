@@ -2,6 +2,7 @@ import { IServiceMonitor } from "../interfaces/IServiceMonitor";
 import { IMetricsClient } from "../interfaces/IMetricsCLient";
 import { Logger } from "../utils/Logger";
 import { io, Socket } from "socket.io-client";
+import msgpackParser from "socket.io-msgpack-parser";
 
 interface SocketIOServiceMonitorDependencies {
     url: string;
@@ -24,14 +25,18 @@ export class SocketIOServiceMonitor implements IServiceMonitor {
         this.metricsClient = metricsClient;
         this.logger = logger;
     }
-
+    //https://proxy.sabagame.com/minisedie/
     connect(): void {
+        const useMsgpack = process.env.USE_MSGPACK === "true";
+        const ioOptions = useMsgpack ? { parser: msgpackParser } : {};
+        // const socketRoute = `wss://proxy.sabagame.com/user/${this.url}`;
         const socketRoute = `wss://l1-proxy2.lumigame.com/user/${this.url}`;
         const option = {
             forceNew: true,
             transports: ["websocket"],
             upgrade: false,
             path: `/${this.url}/socket.io`,
+            // parser: msgpackParser,
         };
 
         this.socket = io(socketRoute, option);
