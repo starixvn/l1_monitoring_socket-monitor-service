@@ -15,7 +15,7 @@ ENV NODE_ENV $NODE_ENV
 RUN mkdir /app && chown node:node /app
 WORKDIR /app
 
-RUN apk --no-cache add curl=8.8.0-r0
+RUN apk --no-cache add curl=8.1.2
 
 USER node
 ENV PATH /app/node_modules/.bin:$PATH
