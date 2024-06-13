@@ -18,7 +18,11 @@ COPY . .
 COPY .env .env
 
 # Build the TypeScript code
-RUN yarn run build
+RUN npm run build
+
+RUN apk --no-cache add curl
+
+HEALTHCHECK  --interval=10s CMD curl --fail http://localhost:5000 || exit 1
 
 # Command to run the app
 CMD ["node", "dist/server.js"]
