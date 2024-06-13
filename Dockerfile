@@ -15,10 +15,11 @@ ENV NODE_ENV $NODE_ENV
 RUN mkdir /app && chown node:node /app
 WORKDIR /app
 
-RUN apk --no-cache add curl
+RUN apk --no-cache add curl=8.8.0
 
 USER node
 ENV PATH /app/node_modules/.bin:$PATH
+COPY --from=builder /app/dist ./dist
 
 HEALTHCHECK  --interval=10s CMD curl --fail http://localhost:5000 || exit 1
 
