@@ -9,19 +9,21 @@ COPY package.json yarn.lock .modprunerrc ./
 
 RUN npm run reg \
     && yarn install
-    
-RUN yarn install --production \
-    && yarn cache clean
-RUN npx mod-pruner prune --force 
 
 # Copy the rest of the application files
 COPY . .
 
-# Copy the .env file (if needed)
-COPY .env .env
-
 # Build the TypeScript code
 RUN npm run build
+RUN rm -rf ./node_modules
+
+RUN yarn install --production \
+    && yarn cache clean
+RUN npx mod-pruner prune --force 
+
+
+# Copy the .env file (if needed)
+COPY .env .env
 
 RUN apk --no-cache add curl
 
