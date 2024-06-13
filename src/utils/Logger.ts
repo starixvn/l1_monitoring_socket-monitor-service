@@ -4,6 +4,6 @@ export class Logger {
     }
 
     static error(message: string): void {
-        console.error(message);
+        console.log(message);
     }
 }

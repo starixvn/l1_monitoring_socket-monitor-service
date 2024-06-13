@@ -10,7 +10,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SocketIOServiceMonitor = void 0;
-const Logger_1 = require("../utils/Logger");
 const socket_io_client_1 = require("socket.io-client");
 class SocketIOServiceMonitor {
     constructor({ url, interval, metricsClient, logger }) {
@@ -19,11 +18,17 @@ class SocketIOServiceMonitor {
         this.url = url;
         this.interval = interval;
         this.metricsClient = metricsClient;
-        debugger;
         this.logger = logger;
     }
     connect() {
-        this.socket = (0, socket_io_client_1.io)(this.url);
+        const socketRoute = `wss://l1-proxy2.lumigame.com/user/${this.url}`;
+        const option = {
+            forceNew: true,
+            transports: ["websocket"],
+            upgrade: false,
+            path: `/${this.url}/socket.io`,
+        };
+        this.socket = (0, socket_io_client_1.io)(socketRoute, option);
         this.socket.on("connect", () => {
             this.logger.log(`Connected to ${this.url}`);
             this.startPinging();
@@ -46,7 +51,7 @@ class SocketIOServiceMonitor {
             const startTime = Date.now();
             this.socket.emit("ping", () => __awaiter(this, void 0, void 0, function* () {
                 const latency = Date.now() - startTime;
-                Logger_1.Logger.log(`Latency to ${this.url}: ${latency} ms`);
+                this.logger.log(`Latency to ${this.url}: ${latency} ms`);
                 this.metricsClient.setLatency(this.url, latency);
                 yield this.metricsClient.pushMetrics();
             }));

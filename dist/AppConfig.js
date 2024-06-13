@@ -1,11 +1,24 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const os_1 = require("os");
 exports.default = {
-    hostingPort: 5000,
+    hostingPort: process.env,
     services: [
-        { url: "http://localhost:3000", interval: 5000 },
-        { url: "http://localhost:4000", interval: 5000 },
+        { url: "minisedie", interval: 5000 },
+        { url: "vipbaccarat", interval: 5000 },
     ],
-    pushGatewayUrl: "http://your-push-gateway-url",
-    jobName: "socket_io_monitor",
+    pushGatewayUrl: process.env.PUSH_GATEWAY,
+    jobName: process.env.JOB_NAME,
+    promPushGatewayConfigs: {
+        baseUrl: process.env.PUSH_GATEWAY,
+        options: {
+            timeout: 5000,
+            agentOptions: {
+                keepAlive: true,
+                keepAliveMsecs: 10000,
+                maxSockets: 10,
+            },
+        },
+        parameters: { jobName: process.env.JOB_NAME, groupings: { instance: (0, os_1.hostname)() } },
+    },
 };

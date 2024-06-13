@@ -12,8 +12,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PrometheusClient = void 0;
 const prom_client_1 = require("prom-client");
 class PrometheusClient {
-    constructor({ config }) {
-        this.jobName = "service_latency_ms";
+    constructor({ config, logger }) {
+        this.options = {
+            timeout: 2000,
+            agentOptions: {
+                keepAlive: true,
+                keepAliveMsecs: 10000,
+                maxSockets: 10,
+            },
+        };
         this.registry = new prom_client_1.Registry();
         this.jobName = config.jobName;
         this.latencyGauge = new prom_client_1.Gauge({
@@ -22,8 +29,9 @@ class PrometheusClient {
             labelNames: ["service_url"],
         });
         this.registry.registerMetric(this.latencyGauge);
-        this.pushGateway = new prom_client_1.Pushgateway(config.pushGatewayUrl, {}, this.registry);
+        this.pushGateway = new prom_client_1.Pushgateway(config.pushGatewayUrl, this.options, this.registry);
         this.registry.setDefaultLabels({ job: this.jobName });
+        this.logger = logger;
     }
     setLatency(serviceUrl, latency) {
         this.latencyGauge.set({ service_url: serviceUrl }, latency);
@@ -34,7 +42,7 @@ class PrometheusClient {
                 yield this.pushGateway.pushAdd({ jobName: this.jobName });
             }
             catch (err) {
-                console.error("Error pushing metrics to Push Gateway:", err);
+                this.logger.error(`Error pushing metrics to Push Gateway: ${err}`);
             }
         });
     }
