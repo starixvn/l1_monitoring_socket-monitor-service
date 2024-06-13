@@ -18,7 +18,7 @@ export class PrometheusClient implements IMetricsClient {
     private logger: typeof Logger;
 
     private options: any = {
-        timeout: 5_000,
+        timeout: 2_000,
         agentOptions: {
             keepAlive: true,
             keepAliveMsecs: 10_000,
