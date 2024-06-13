@@ -15,7 +15,6 @@ const prometheusClient = container.resolve("prometheusClient");
 const config = container.resolve("config");
 const logger = container.resolve<typeof Logger>("logger");
 
-// Initialize monitors
 config.services.forEach((service: { url: string; interval: number }) => {
     const monitor = new SocketIOServiceMonitor({
         url: service.url,
@@ -35,6 +34,10 @@ router.get("/status", (req, res) => {
             connected: monitors[index].isConnected(),
         })),
     });
+});
+
+router.get("/", (req, res) => {
+    res.status(200).json("Socket Monitor Service");
 });
 
 export default router;
