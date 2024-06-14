@@ -5,6 +5,7 @@ import { io, Socket } from "socket.io-client";
 import msgpackParser from "socket.io-msgpack-parser";
 
 interface SocketIOServiceMonitorDependencies {
+    route: string;
     url: string;
     interval: number;
     metricsClient: IMetricsClient;
@@ -14,12 +15,14 @@ interface SocketIOServiceMonitorDependencies {
 export class SocketIOServiceMonitor implements IServiceMonitor {
     private socket: Socket | null = null;
     private pingInterval: NodeJS.Timeout | null = null;
+    private route: string;
     private url: string;
     private interval: number;
     private metricsClient: IMetricsClient;
     private logger: typeof Logger;
 
-    constructor({ url, interval, metricsClient, logger }: SocketIOServiceMonitorDependencies) {
+    constructor({ route, url, interval, metricsClient, logger }: SocketIOServiceMonitorDependencies) {
+        this.route = route;
         this.url = url;
         this.interval = interval;
         this.metricsClient = metricsClient;
@@ -30,14 +33,14 @@ export class SocketIOServiceMonitor implements IServiceMonitor {
         const useMsgpack = process.env.USE_MSGPACK === "true";
         const ioOptions = useMsgpack ? { parser: msgpackParser } : {};
         //http://proxy.sabagame.net
-        // const socketRoute = `wss://proxy.sabagame.net/user/${this.url}`;
-        const socketRoute = `wss://l1-proxy1.lumigame.com/user/${this.url}`;
+        const socketRoute = `wss://${this.route}/user/${this.url}`;
+        // const socketRoute = `wss://l1-proxy1.lumigame.com/user/${this.url}`;
         const option = {
             forceNew: true,
             transports: ["websocket"],
             upgrade: false,
             path: `/${this.url}/socket.io`,
-            //parser: msgpackParser,
+            parser: msgpackParser,
         };
 
         this.socket = io(socketRoute, option);
@@ -68,7 +71,7 @@ export class SocketIOServiceMonitor implements IServiceMonitor {
             const startTime = Date.now();
             this.socket!.emit("ping", async () => {
                 const latency = Date.now() - startTime;
-                this.logger.log(`Latency to ${this.url}: ${latency} ms`);
+                this.logger.log(`Latency to ${this.route}/${this.url}: ${latency} ms`);
                 this.metricsClient.setLatency(this.url, latency);
 
                 await this.metricsClient.pushMetrics();

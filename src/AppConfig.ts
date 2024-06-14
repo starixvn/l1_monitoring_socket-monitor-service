@@ -3,8 +3,10 @@ import { hostname } from "os";
 export default {
     hostingPort: process.env,
     services: [
-        { url: "minisedie", interval: 5000 },
-        { url: "vipbaccarat", interval: 5000 },
+        { route: "proxy.sabagame.com", url: "minisedie", interval: 5000 },
+        { route: "proxy.sabagame.com", url: "vipbaccarat", interval: 5000 },
+        { route: "proxy.sabagame.net", url: "minisedie", interval: 5000 },
+        { route: "proxy.sabagame.net", url: "vipbaccarat", interval: 5000 },
     ],
     pushGatewayUrl: process.env.PUSH_GATEWAY,
     jobName: process.env.JOB_NAME,
