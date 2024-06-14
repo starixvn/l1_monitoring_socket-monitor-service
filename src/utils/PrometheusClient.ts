@@ -33,7 +33,7 @@ export class PrometheusClient implements IMetricsClient {
         this.latencyGauge = new Gauge({
             name: this.jobName,
             help: "Latency of the service in milliseconds",
-            labelNames: ["service_url"],
+            labelNames: ["service_url", "route"],
         });
 
         this.registry.registerMetric(this.latencyGauge);
@@ -44,8 +44,8 @@ export class PrometheusClient implements IMetricsClient {
         this.logger = logger;
     }
 
-    setLatency(serviceUrl: string, latency: number): void {
-        this.latencyGauge.set({ service_url: serviceUrl }, latency);
+    setLatency(route: string, serviceUrl: string, latency: number): void {
+        this.latencyGauge.set({ route: route, service_url: serviceUrl }, latency);
     }
 
     async pushMetrics(): Promise<void> {

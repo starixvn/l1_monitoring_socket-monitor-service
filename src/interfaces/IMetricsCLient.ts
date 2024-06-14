@@ -1,4 +1,4 @@
 export interface IMetricsClient {
-    setLatency(serviceUrl: string, latency: number): void;
+    setLatency(route: string, serviceUrl: string, latency: number): void;
     pushMetrics(): Promise<void>;
 }

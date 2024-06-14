@@ -14,7 +14,7 @@ interface SocketIOServiceMonitorDependencies {
 }
 
 export class SocketIOServiceMonitor implements IServiceMonitor {
-    private reconnectSchedule = 3 * 60 * 1000; // 3 minutes
+    private reconnectSchedule = 1 * 60 * 1000; // 3 minutes
     private socket: Socket | null = null;
     private pingInterval: NodeJS.Timeout | null = null;
     private route: string;
@@ -79,7 +79,7 @@ export class SocketIOServiceMonitor implements IServiceMonitor {
             this.socket!.emit("ping", async () => {
                 const latency = Date.now() - startTime;
                 this.logger.log(`Latency to ${this.route}/${this.url}: ${latency} ms`);
-                this.metricsClient.setLatency(this.url, latency);
+                this.metricsClient.setLatency(this.route, this.url, latency);
 
                 await this.metricsClient.pushMetrics();
             });
