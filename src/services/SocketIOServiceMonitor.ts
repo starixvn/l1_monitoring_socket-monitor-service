@@ -13,6 +13,7 @@ interface SocketIOServiceMonitorDependencies {
 }
 
 export class SocketIOServiceMonitor implements IServiceMonitor {
+    private reconnectSchedule = 3 * 60 * 1000; // 3 minutes
     private socket: Socket | null = null;
     private pingInterval: NodeJS.Timeout | null = null;
     private route: string;
@@ -20,6 +21,7 @@ export class SocketIOServiceMonitor implements IServiceMonitor {
     private interval: number;
     private metricsClient: IMetricsClient;
     private logger: typeof Logger;
+    private reconnectInterval: NodeJS.Timeout | undefined;
 
     constructor({ route, url, interval, metricsClient, logger }: SocketIOServiceMonitorDependencies) {
         this.route = route;
@@ -32,9 +34,8 @@ export class SocketIOServiceMonitor implements IServiceMonitor {
     connect(): void {
         const useMsgpack = process.env.USE_MSGPACK === "true";
         const ioOptions = useMsgpack ? { parser: msgpackParser } : {};
-        //http://proxy.sabagame.net
+
         const socketRoute = `wss://${this.route}/user/${this.url}`;
-        // const socketRoute = `wss://l1-proxy1.lumigame.com/user/${this.url}`;
         const option = {
             forceNew: true,
             transports: ["websocket"],
@@ -58,6 +59,8 @@ export class SocketIOServiceMonitor implements IServiceMonitor {
             this.logger.log(`Disconnected from  ${socketRoute}`);
             this.stopPinging();
         });
+
+        this.startReconnectSchedule();
     }
 
     disconnect(): void {
@@ -87,5 +90,21 @@ export class SocketIOServiceMonitor implements IServiceMonitor {
 
     isConnected(): boolean {
         return this.socket?.connected || false;
+    }
+
+    private reconnect() {
+        if (this.socket) {
+            console.log("Reconnecting to socket...");
+            this.disconnect();
+            this.connect();
+        }
+    }
+
+    private startReconnectSchedule() {
+        if (this.reconnectInterval) {
+            clearInterval(this.reconnectInterval);
+        }
+
+        this.reconnectInterval = setInterval(() => this.reconnect(), this.reconnectSchedule);
     }
 }
