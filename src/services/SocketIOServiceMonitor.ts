@@ -10,6 +10,7 @@ interface SocketIOServiceMonitorDependencies {
     interval: number;
     metricsClient: IMetricsClient;
     logger: typeof Logger;
+    env: string;
 }
 
 export class SocketIOServiceMonitor implements IServiceMonitor {
@@ -22,25 +23,28 @@ export class SocketIOServiceMonitor implements IServiceMonitor {
     private metricsClient: IMetricsClient;
     private logger: typeof Logger;
     private reconnectInterval: NodeJS.Timeout | undefined;
+    private env: string;
 
-    constructor({ route, url, interval, metricsClient, logger }: SocketIOServiceMonitorDependencies) {
+    constructor({ route, url, interval, metricsClient, logger, env }: SocketIOServiceMonitorDependencies) {
         this.route = route;
         this.url = url;
         this.interval = interval;
         this.metricsClient = metricsClient;
         this.logger = logger;
+        this.env = env;
     }
     //https://proxy.sabagame.com/minisedie/
     connect(): void {
         const useMsgpack = process.env.USE_MSGPACK === "true";
         const ioOptions = useMsgpack ? { parser: msgpackParser } : {};
+        const envUrl = this.env != "" ? `/${this.env}` : "";
 
         const socketRoute = `wss://${this.route}/user/${this.url}`;
         const option = {
             forceNew: true,
             transports: ["websocket"],
             upgrade: false,
-            path: `/${this.url}/socket.io`,
+            path: `${envUrl}/${this.url}/socket.io`,
             parser: msgpackParser,
         };
 
